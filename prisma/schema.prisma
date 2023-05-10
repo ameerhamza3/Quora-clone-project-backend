@@ -1,0 +1,135 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  name           String
+  email          String   @unique
+  password       String
+  username       String   @unique
+  age            Int
+  gender         String
+  profilePicture String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // One-to-many relation with Question
+  questions Question[]
+
+  // One-to-many relation with Answer
+  answers Answer[]
+
+  // Define the many-to-many relationship with the Topic model
+  topics UserTopic[]
+
+  // One-to-many relation with QuestionReaction
+  questionReactions QuestionReaction[]
+
+  // One-to-many relation with AnswerReaction
+  answerReactions AnswerReaction[]
+
+  @@map(name: "users")
+}
+
+model Question {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Many-to-one relation with Topic
+  topic   Topic @relation(fields: [topicId], references: [id])
+  topicId Int
+
+  // One-to-many relation with Answer
+  answers Answer[]
+
+  // Many-to-one relation with User
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  // One-to-many relation with QuestionReaction
+  reactions QuestionReaction[]
+
+  @@map(name: "questions")
+}
+
+model Answer {
+  id        Int      @id @default(autoincrement())
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Many-to-one relation with Question
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId Int
+
+  // Many-to-one relation with User
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  // One-to-many relation with AnswerReaction
+  reactions AnswerReaction[]
+
+  @@map(name: "answers")
+}
+
+model Topic {
+  id           Int      @id @default(autoincrement())
+  title        String
+  description  String
+  topicPicture String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // One-to-many relation with Question
+  questions Question[]
+
+  // Define the many-to-many relationship with the User model
+  users UserTopic[]
+
+  @@map(name: "topics")
+}
+
+// UserTopic model for the many-to-many relationship
+model UserTopic {
+  id       Int     @id @default(autoincrement())
+  user     User    @relation(fields: [userId], references: [id])
+  userId   Int
+  topic    Topic   @relation(fields: [topicId], references: [id])
+  topicId  Int
+  followed Boolean @default(false)
+
+  @@map(name: "userTopics")
+}
+
+// QuestionReaction model for the likes/dislikes of questions
+model QuestionReaction {
+  id         Int      @id @default(autoincrement())
+  type       String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId Int
+
+  @@map(name: "questionReactions")
+}
+
+// AnswerReaction model for the likes/dislikes of answers
+model AnswerReaction {
+  id       Int    @id @default(autoincrement())
+  type     String
+  user     User   @relation(fields: [userId], references: [id])
+  userId   Int
+  answer   Answer @relation(fields: [answerId], references: [id])
+  answerId Int
+
+  @@map(name: "answerReactions")
+}
