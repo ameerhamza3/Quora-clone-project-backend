@@ -16,12 +16,14 @@ import answerReactionRoutes from './services/answerReactionService.js'
 const app = express();
 const prisma = new PrismaClient();
 
+
+app.use(cors()); 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(import.meta.url, "public")));
-app.use(cors()); 
+
 
 app.use("/users/auth", authRoutes);
 app.use("/users/profile", profileRoutes);
